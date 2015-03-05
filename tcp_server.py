@@ -6,7 +6,7 @@ import argparse
 import copy
 import gevent
 import gevent.server
-import json
+import simplejson as json
 import math
 import multiprocessing
 import os
@@ -59,6 +59,7 @@ def process_query_line(line, filehandle=None, workers=None):
 
 def enqueue(complaint, workers=None): # args are line_dict, line, workers
   """Send a single data line to the appropriate worker."""
+  complaint['location'] = get_location(complaint, bin_granularity=50.0)
   worker = worker_getter(complaint, workers)
   worker.inqueue.put(complaint)
 
@@ -75,7 +76,7 @@ def by_data(complaint, workers):
 def two_level(complaint, workers):
   # idea is to have worker i, i+1 each have half of the same sample of data
   bucket_id = (hash(complaint.get(HIERARCHY_KEYS[0])) % len(workers)) // 2
-  worker_id = 2 * bucket_id + random.randint(0, 1)
+  worker_id = 2 * bucket_id + (hash(complaint.get('Unique Key')) % 2)
   return workers[worker_id]
 
 
@@ -117,7 +118,10 @@ def get_counts(query_string_dict, filehandle=None, workers=None):
     worker.inqueue.put(query)
   for worker in workers:
     results.append(worker.outqueue.get(True))
-  return json.dumps(results)
+  result = dict()
+  result['by_worker'] = results
+  result['total'] = sum(results)
+  return json.dumps(result, indent=4, sort_keys=True)
 
 
 def get_cardinality(query_string_dict, filehandle=None, workers=None):
@@ -235,7 +239,7 @@ class worker_class(multiprocessing.Process):
     self.my_data[levels[0]][levels[1]][levels[2]] += 1
     # just spend some cpu cycles, usually you'd expect
     # to have to do some more business logic here
-    for i in xrange(10000):
+    for i in xrange(20000):
       _ = math.sqrt(i)
 
 
