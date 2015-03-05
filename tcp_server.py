@@ -37,8 +37,8 @@ def make_handle(workers_list):
 def process_line(line, filehandle=None, workers=None):
   """Handle a single line, this needs to determine"""
   try: # do this if you get a json line
-    line_dict = json.loads(line.strip())
-    return process_data_line(line_dict, line, workers=workers)
+    complaint = json.loads(line.strip())
+    return enqueue(complaint, workers=workers)
   except ValueError: # do this if you get a non-json line
     return process_query_line(line.strip(), filehandle=filehandle, workers=workers)
 
@@ -57,10 +57,26 @@ def process_query_line(line, filehandle=None, workers=None):
     return my_func(query_string_dict, filehandle=filehandle, workers=workers)
 
 
-def process_data_line(line_dict, _, workers=None): # args are line_dict, line, workers
+def enqueue(complaint, workers=None): # args are line_dict, line, workers
   """Send a single data line to the appropriate worker."""
-  worker = random.choice(workers)
-  worker.inqueue.put(line_dict)
+  worker = worker_getter(complaint, workers)
+  worker.inqueue.put(complaint)
+
+
+def scatter(complaint, workers):
+  return random.choice(workers)
+
+
+def by_data(complaint, workers):
+  worker_id = hash(complaint.get(HIERARCHY_KEYS[0])) % len(workers)
+  return workers[worker_id]
+
+
+def two_level(complaint, workers):
+  # idea is to have worker i, i+1 each have half of the same sample of data
+  bucket_id = (hash(complaint.get(HIERARCHY_KEYS[0])) % len(workers)) // 2
+  worker_id = 2 * bucket_id + random.randint(0, 1)
+  return workers[worker_id]
 
 
 def merge_dicts(dicta, dictb):
@@ -193,7 +209,7 @@ class worker_class(multiprocessing.Process):
     return self.lines_processed
 
   def get_cardinality(self, query_string_dict):
-    return len(self.my_data)
+    return count_leaf_nodes(self.my_data)
 
   def say_hi(self, query_string_dict):
     return "Hello from worker {}, pid = {}".format(self.worker_id, os.getpid())
@@ -210,9 +226,8 @@ class worker_class(multiprocessing.Process):
       return
     self.seen_events.add(event_id)
     self.lines_processed += 1
-    level_keys = ['location', 'Complaint Type', 'Descriptor']
     levels = list()
-    for key in level_keys:
+    for key in HIERARCHY_KEYS:
       levels.append(idata.get(key))
     self.my_data.setdefault(levels[0], dict())
     self.my_data[levels[0]].setdefault(levels[1], dict())
@@ -224,6 +239,12 @@ class worker_class(multiprocessing.Process):
       _ = math.sqrt(i)
 
 
+def count_leaf_nodes(idict):
+  if type(idict) in [type(dict())]:
+    return sum((count_leaf_nodes(x) for x in idict.itervalues()))
+  else:
+    return 1
+
 
 def get_location(complaint, bin_granularity=50.0):
   """bin the location with some sort of granularity"""
@@ -234,11 +255,18 @@ def get_location(complaint, bin_granularity=50.0):
   return tuple([ilat, ilong])
 
 
+HIERARCHY_KEYS = ['location', 'Complaint Type', 'Descriptor']
+
 def main():
   """The mainsy"""
   parser = argparse.ArgumentParser()
+  parser.add_argument('--router', type=str, choices=['random', 'by_data', 'two_level'], required=True)
   parser.add_argument('PORT_NUM', type=int)
   args = vars(parser.parse_args())
+  if 'random' == args['router']:
+    args['worker_getter'] = scatter
+  else:
+    args['worker_getter'] = globals()[args['router']]
   globals().update(args) # copy the args directly into globals (there are probably loads of good reasons to not do this in practice)
   # spawn the workers
   STDERR_LOCK = multiprocessing.RLock()
