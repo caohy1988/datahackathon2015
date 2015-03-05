@@ -14,30 +14,6 @@ import random
 import sys
 import urlparse
 
-def require_args(required_args):
-  """decorator function to make arguments required"""
-  def wrap(myfunc):
-    """decorator boilerplate"""
-    def wrapped_f(*args, **kwargs):
-      """make the decorated function"""
-      for arg in sorted(required_args):
-        if arg not in args[0]:
-          message = "{} is a required argument to {}.".format(arg, myfunc.func_name)
-          print >> sys.stderr, message
-          if kwargs.get('filehandle'):
-            print >> kwargs.get('filehandle'), message
-          return False
-        if 'password' in required_args:
-          if hash(args[0]['password']) != -7207291063912423845: # password is "password"
-            message = "Authentication failed."
-            print >> sys.stderr, message
-            if kwargs.get('filehandle'):
-              print >> kwargs.get('filehandle'), message
-            return False
-      return myfunc(*args, **kwargs)
-    return wrapped_f
-  return wrap
-
 
 def make_handle(workers_list):
   """make the handler function, which wants to know about the workers"""
@@ -170,7 +146,6 @@ def get_id(idata):
   return tuple(as_list)
 
 
-@require_args(['password'])
 def quit(_, **kwargs):
   """send the exit signal to all workers and close up shop"""
   message = "Received hangup signal, exiting."
