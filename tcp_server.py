@@ -198,7 +198,10 @@ class worker_class(multiprocessing.Process):
     with self.stderr_lock:
       print >> sys.stderr, self.say_hi(dict())
     while True:
-      next_data = self.inqueue.get(True) # make a blocking get
+      try:
+        next_data = self.inqueue.get(True) # make a blocking get
+      except KeyboardInterrupt:
+        next_data = None
       if next_data is None: # this is my code to hang up
         with self.stderr_lock:
           print >> sys.stderr, "Goodbye from worker {}".format(self.worker_id)
