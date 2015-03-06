@@ -234,12 +234,18 @@ class worker_class(multiprocessing.Process):
     self.seen_events.add(event_id)
     self.lines_processed += 1
     levels = list()
-    for key in HIERARCHY_KEYS:
-      levels.append(idata.get(key))
-    self.my_data.setdefault(levels[0], dict())
-    self.my_data[levels[0]].setdefault(levels[1], dict())
-    self.my_data[levels[0]][levels[1]].setdefault(levels[2], 0)
-    self.my_data[levels[0]][levels[1]][levels[2]] += 1
+    dct_pointer = self.my_data
+    for key in HIERARCHY_KEYS[:-1]:
+      keyval = idata.get(key)
+      if type(keyval) == type(""):
+        keyval = keyval.title()
+      dct_pointer.setdefault(keyval, dict())
+      dct_pointer = dct_pointer[keyval]
+    keyval = idata.get(HIERARCHY_KEYS[-1])
+    if type(keyval) == type(""):
+      keyval = keyval.title()
+    dct_pointer.setdefault(keyval, 0)
+    dct_pointer[keyval] += 1
     # just spend some cpu cycles, usually you'd expect
     # to have to do some more business logic here
     for i in xrange(20000):
@@ -262,7 +268,9 @@ def get_location(complaint, bin_granularity=50.0):
   return tuple([ilat, ilong])
 
 
-HIERARCHY_KEYS = ['location', 'Complaint Type', 'Descriptor']
+# HIERARCHY_KEYS = ['location', 'Complaint Type', 'Descriptor']
+# HIERARCHY_KEYS = ['location']
+HIERARCHY_KEYS = ['Complaint Type']
 
 def main():
   """The mainsy"""
