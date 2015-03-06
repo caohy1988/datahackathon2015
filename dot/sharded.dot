@@ -1,0 +1,99 @@
+digraph mygraph {
+  // node [style=invisible]
+  graph [fontname = "tahoma" splines=line]
+  edge [fontname = "tahoma" penwidth=2]
+  //nodesep=1.5
+  ranksep=2
+  compound=true
+  penwidth=2
+
+  subgraph cluster_source {
+    // [fontname = "tahoma" margin=0.5 fontcolor=blue fontsize=32 width=0.5 shape=box style=filled]
+    style=invisible
+    node [style=invisible, fixedsize=true, width=0.7, height=0.5, label=""]
+    s0
+    s1
+    s2
+    s3
+  }
+
+  subgraph cluster_director {
+    label="Director"
+    fontsize=20
+    node [style=invisible, fixedsize=true, width=0.7, height=0.5, label=""]
+    d0
+    d1
+    d2
+    d3
+  }
+
+  subgraph cluster_worker_0 {
+    fontsize=16
+    label="Worker 1"
+    nodesep=0
+    margin=0
+    node [shape=box, style=invisible, size=0, fixedsize=true, width=0.1, height=0.7, label=""]
+    w0t0
+    w0t1
+    w0t2
+    w0t3
+  }
+
+  subgraph cluster_worker_1 {
+    fontsize=16
+    label="Worker 2"
+    nodesep=0
+    margin=0
+    node [shape=box, style=invisible, size=0, fixedsize=true, width=0.1, height=0.7, label=""]
+    w1t0
+    w1t1
+    w1t2
+    w1t3
+  }
+
+  subgraph cluster_worker_2 {
+    fontsize=16
+    label="Worker 3"
+    nodesep=0
+    margin=0
+    node [shape=box, style=invisible, size=0, fixedsize=true, width=0.1, height=0.7, label=""]
+    w2t0
+    w2t1
+    w2t2
+    w2t3
+  }
+
+  subgraph cluster_worker_3 {
+    fontsize=16
+    label="Worker 4"
+    nodesep=0
+    margin=0
+    nodesize=0
+    node [shape=box, style=invisible, size=0, fixedsize=true, width=0.1, height=0.7, label=""]
+    w3t0
+    w3t1
+    w3t2
+    w3t3
+  }
+  s0 -> d0[color="#DC0055",lhead=cluster_director];
+  s1 -> d1[color="#FF7800",lhead=cluster_director];
+  s2 -> d2[color="#028E9B",lhead=cluster_director];
+  s3 -> d3[color="#7CE700",lhead=cluster_director];
+
+  d0 -> w0t0[ltail=cluster_director,lhead=cluster_worker_0,color="#DC0055"];
+  d0 -> w0t1[ltail=cluster_director,lhead=cluster_worker_0,color="#DC0055"];
+  d0 -> w0t2[ltail=cluster_director,lhead=cluster_worker_0,color="#DC0055"];
+  d0 -> w0t3[ltail=cluster_director,lhead=cluster_worker_0,color="#DC0055"];
+  d1 -> w1t0[ltail=cluster_director,lhead=cluster_worker_1,color="#FF7800"];
+  d1 -> w1t1[ltail=cluster_director,lhead=cluster_worker_1,color="#FF7800"];
+  d1 -> w1t2[ltail=cluster_director,lhead=cluster_worker_1,color="#FF7800"];
+  d1 -> w1t3[ltail=cluster_director,lhead=cluster_worker_1,color="#FF7800"];
+  d2 -> w2t0[ltail=cluster_director,lhead=cluster_worker_2,color="#028E9B"];
+  d2 -> w2t1[ltail=cluster_director,lhead=cluster_worker_2,color="#028E9B"];
+  d2 -> w2t2[ltail=cluster_director,lhead=cluster_worker_2,color="#028E9B"];
+  d2 -> w2t3[ltail=cluster_director,lhead=cluster_worker_2,color="#028E9B"];
+  d3 -> w3t0[ltail=cluster_director,lhead=cluster_worker_3,color="#7CE700"];
+  d3 -> w3t1[ltail=cluster_director,lhead=cluster_worker_3,color="#7CE700"];
+  d3 -> w3t2[ltail=cluster_director,lhead=cluster_worker_3,color="#7CE700"];
+  d3 -> w3t3[ltail=cluster_director,lhead=cluster_worker_3,color="#7CE700"];
+}
