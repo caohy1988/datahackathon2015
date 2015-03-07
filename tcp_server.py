@@ -31,6 +31,8 @@ def make_handle(workers_list):
       resp = process_line(line, filehandle=fileobj, workers=workers_list)
       if resp: # if there's something to send back to the client
         fileobj.write(resp + '\n') # then do that
+        fileobj.close()
+        break
   return handle
 
 
