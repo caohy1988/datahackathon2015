@@ -111,6 +111,18 @@ def get(query_string_dict, filehandle=None, workers=None):
   return json.dumps(results, indent=4, sort_keys=True)
 
 
+def get_data(query_string_dict, filehandle=None, workers=None):
+  """get the dictionaries from the worker processes, rolled up into one"""
+  results = list()
+  query_string_dict['action'] = 'get'
+  for worker in workers:
+    worker.inqueue.put(query_string_dict)
+  for worker in workers:
+    iresult = worker.outqueue.get(True)
+    results.append(iresult)
+  return json.dumps(results, indent=4, sort_keys=True)
+
+
 def get_counts(query_string_dict, filehandle=None, workers=None):
   """get an array of the number of lines processed by each worker"""
   results = list()
