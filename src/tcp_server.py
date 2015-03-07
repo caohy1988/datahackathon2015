@@ -251,13 +251,13 @@ class worker_class(multiprocessing.Process):
     dct_pointer = self.my_data
     for key in HIERARCHY_KEYS[:-1]:
       keyval = idata.get(key)
-      if type(keyval) == type(""):
-        keyval = keyval.title()
+      if type(keyval) in [type(""), type(u"")]:
+        keyval = str(keyval.title())
       dct_pointer.setdefault(keyval, dict())
       dct_pointer = dct_pointer[keyval]
     keyval = idata.get(HIERARCHY_KEYS[-1])
-    if type(keyval) == type(""):
-      keyval = keyval.title()
+    if type(keyval) in [type(""), type(u"")]:
+      keyval = str(keyval.title())
     dct_pointer.setdefault(keyval, 0)
     dct_pointer[keyval] += 1
     # just spend some cpu cycles, usually you'd expect
