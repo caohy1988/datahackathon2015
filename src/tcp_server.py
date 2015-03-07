@@ -291,6 +291,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--router', type=str, choices=['random', 'by_data', 'two_level'], required=True)
   parser.add_argument('PORT_NUM', type=int)
+  parser.add_argument('--num-workers', type=int, default=multiprocessing.cpu_count())
   args = vars(parser.parse_args())
   if 'random' == args['router']:
     args['worker_getter'] = scatter
@@ -299,9 +300,8 @@ def main():
   globals().update(args) # copy the args directly into globals (there are probably loads of good reasons to not do this in practice)
   # spawn the workers
   STDERR_LOCK = multiprocessing.RLock()
-  num_cores = multiprocessing.cpu_count()
   workers_list = list()
-  for i in xrange(num_cores):
+  for i in xrange(args['num_workers']):
     worker_queue = multiprocessing.Queue()
     results_queue = multiprocessing.Queue()
     iworker = worker_class(worker_queue, results_queue, worker_id=i, stderr_lock=STDERR_LOCK)
