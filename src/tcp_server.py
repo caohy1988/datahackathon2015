@@ -135,7 +135,7 @@ def get_counts(query_string_dict, filehandle=None, workers=None):
   result = dict()
   result['by_worker'] = results
   result['total'] = sum(results)
-  return json.dumps(result, indent=4, sort_keys=True)
+  return json.dumps(results, indent=4, sort_keys=True)
 
 
 def get_cardinality(query_string_dict, filehandle=None, workers=None):
@@ -243,7 +243,6 @@ class worker_class(multiprocessing.Process):
     idata['location'] = str(get_location(idata))
     event_id = get_id(idata)
     if event_id in self.seen_events:
-      # print >> sys.stderr, "Already saw event {}.".format(event_id)
       return
     self.seen_events.add(event_id)
     self.lines_processed += 1
